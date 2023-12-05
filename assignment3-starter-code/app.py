@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request,redirect,url_for # For flask implementation
+from flask import Flask, render_template,request,redirect,url_for, jsonify # For flask implementation
 from pymongo import MongoClient # Database connector
 from bson.objectid import ObjectId # For ObjectId to work
 from bson.errors import InvalidId # For catching InvalidId exception for ObjectId
@@ -119,6 +119,32 @@ def search():
 @app.route("/about")
 def about():
 	return render_template('credits.html',t=title,h=heading)
+
+crash = False
+
+@app.route('/crash')
+def crash_app():
+    global crash
+    crash = True
+    return jsonify({'status': 'crashing'}), 200
+
+@app.route('/recover')
+def recover():
+    global crashed
+    crashed = False
+    return jsonify({'status': 'recovered'}), 200
+
+@app.route('/health')
+def health():
+    if crash:
+        return jsonify({'status': 'unhealthy'}), 500
+    return jsonify({'status': 'healthy'}), 200
+
+@app.route('/live')
+def live():
+    if crash:
+        return jsonify({'status': 'dead'}), 500
+    return jsonify({'status': 'alive'}), 200
 
 if __name__ == "__main__":
 	env = os.environ.get('FLASK_ENV', 'development')

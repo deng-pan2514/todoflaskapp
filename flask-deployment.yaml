@@ -7,6 +7,10 @@ spec:
   selector:
     matchLabels:
       app: flask-app
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -19,7 +23,22 @@ spec:
         - containerPort: 5000
         env:
         - name: MONGO_HOST
-          value: "mongodb-service"
+          value: mongodb-service
         - name: MONGO_PORT
-          value: "27017"
-
+          value: '27017'
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 1
